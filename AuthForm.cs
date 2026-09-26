@@ -19,6 +19,7 @@ namespace QuanLyChiTieu
         private TextBox txtLoginPassword;
         private Button btnLogin;
         private Button btnGoToRegister;
+        private Button btnForgotPassword;
 
         // Register Controls
         private Panel pnlRegister;
@@ -81,8 +82,45 @@ namespace QuanLyChiTieu
             btnLogin.FlatAppearance.BorderSize = 0;
             btnLogin.Click += BtnLogin_Click;
 
-            Label lblNoAccount = new Label() { Text = "Bạn chưa có tài khoản?", Font = new Font("Segoe UI", 10), Location = new Point(120, 390), AutoSize = true, ForeColor = Color.Gray };
-            btnGoToRegister = new Button() { Text = "Tạo tài khoản", Font = new Font("Segoe UI", 10, FontStyle.Bold), Location = new Point(270, 385), Size = new Size(120, 30), ForeColor = Color.FromArgb(41, 40, 104), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
+            btnForgotPassword = new Button() 
+            { 
+                Text = "Quên mật khẩu?", 
+                Font = new Font("Segoe UI", 9.5f, FontStyle.Regular), 
+                Location = new Point(85, 385), 
+                Size = new Size(130, 30), 
+                ForeColor = Color.FromArgb(41, 40, 104), 
+                FlatStyle = FlatStyle.Flat, 
+                Cursor = Cursors.Hand, 
+                BackColor = Color.Transparent 
+            };
+            btnForgotPassword.FlatAppearance.BorderSize = 0;
+            btnForgotPassword.Click += (s, e) => {
+                using (var frm = new quanlycitieu.Views.FrmForgotPassword())
+                {
+                    frm.ShowDialog(this);
+                }
+            };
+
+            Label lblDivider = new Label() 
+            { 
+                Text = "•", 
+                Font = new Font("Segoe UI", 12, FontStyle.Bold), 
+                Location = new Point(222, 388), 
+                AutoSize = true, 
+                ForeColor = Color.FromArgb(180, 180, 200) 
+            };
+
+            btnGoToRegister = new Button() 
+            { 
+                Text = "Tạo tài khoản", 
+                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), 
+                Location = new Point(245, 385), 
+                Size = new Size(135, 30), 
+                ForeColor = Color.FromArgb(41, 40, 104), 
+                FlatStyle = FlatStyle.Flat, 
+                Cursor = Cursors.Hand,
+                BackColor = Color.Transparent
+            };
             btnGoToRegister.FlatAppearance.BorderSize = 0;
             btnGoToRegister.Click += (s, e) => ShowRegister();
 
@@ -90,7 +128,8 @@ namespace QuanLyChiTieu
             pnlLogin.Controls.Add(txtLoginEmail);
             pnlLogin.Controls.Add(txtLoginPassword);
             pnlLogin.Controls.Add(btnLogin);
-            pnlLogin.Controls.Add(lblNoAccount);
+            pnlLogin.Controls.Add(btnForgotPassword);
+            pnlLogin.Controls.Add(lblDivider);
             pnlLogin.Controls.Add(btnGoToRegister);
 
             pnlRight.Controls.Add(pnlLogin);

@@ -11,10 +11,25 @@ namespace quanlycitieu
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            var auth = new QuanLyChiTieu.AuthForm();
-            if (auth.ShowDialog() == DialogResult.OK)
+            while (true)
             {
-                Application.Run(new Form1());
+                var auth = new QuanLyChiTieu.AuthForm();
+                if (auth.ShowDialog() == DialogResult.OK)
+                {
+                    var mainForm = new Form1();
+                    Application.Run(mainForm);
+                    
+                    // Nếu người dùng chọn Đăng xuất, vòng lặp quay lại AuthForm
+                    if (!mainForm.IsLogout)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    // Người dùng đóng cửa sổ AuthForm -> thoát ứng dụng
+                    break;
+                }
             }
         }
     }

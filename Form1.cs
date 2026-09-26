@@ -2,13 +2,22 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using quanlycitieu.Views;
+using quanlycitieu.BLL;
 
 namespace quanlycitieu
 {
     public partial class Form1 : Form
     {
+        public bool IsLogout = false;
+
         private Panel pnlSidebar;
         private Panel pnlContent;
+
+        // User Profile Widget
+        private Panel pnlUserProfile;
+        private PictureBox pbUserAvatar;
+        private Label lblUserName;
+        private Label lblUserSubtitle;
         
         private Button btnTrangChu;
         private Button btnLich;
@@ -37,11 +46,15 @@ namespace quanlycitieu
             InitializeSidebar();
             InitializeViews();
 
+            LoadUserProfileHeader();
+
             this.FormClosing += Form1_FormClosing;
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
+            if (this.IsLogout) return; // Không hiển thị xác nhận khi người dùng chủ động Đăng xuất
+
             if (MessageBox.Show("Bạn có chắc chắn muốn thoát phần mềm không?", "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
             {
                 e.Cancel = true; // Cancel the closing
@@ -55,18 +68,76 @@ namespace quanlycitieu
             pnlSidebar.Width = 220;
             pnlSidebar.BackColor = Color.FromArgb(41, 40, 104);
 
-            // Wallet icon / Title
-            PictureBox pbWallet = new PictureBox() { Image = GetIcon("wallet.png"), SizeMode = PictureBoxSizeMode.Zoom, Size = new Size(32, 32), Location = new Point(20, 20) };
-            Label lblTitle = new Label() { Text = "Ví Cá Nhân", ForeColor = Color.White, Font = new Font("Segoe UI", 10), Location = new Point(60, 28), AutoSize = true };
-            
-            pnlSidebar.Controls.Add(pbWallet);
-            pnlSidebar.Controls.Add(lblTitle);
+            // 1. User Profile Button Widget (Replaces "Ví Cá Nhân")
+            pnlUserProfile = new Panel()
+            {
+                Location = new Point(10, 14),
+                Size = new Size(200, 58),
+                BackColor = Color.FromArgb(52, 50, 118),
+                Cursor = Cursors.Hand
+            };
 
-            btnTrangChu = CreateMenuButton("TRANG CHỦ", "trangchu.png", 100);
-            btnLich = CreateMenuButton("LỊCH", "lich.png", 160);
-            btnNhapVao = CreateMenuButton("NHẬP VÀO", "nhapvao.png", 220);
-            btnThongKe = CreateMenuButton("THỐNG KÊ", "thongke.png", 280);
-            btnDanhMuc = CreateMenuButton("DANH MỤC", "danhmuc.png", 340);
+            pbUserAvatar = new PictureBox()
+            {
+                Size = new Size(38, 38),
+                Location = new Point(10, 10),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Cursor = Cursors.Hand
+            };
+
+            lblUserName = new Label()
+            {
+                Text = "Người dùng",
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
+                Location = new Point(54, 11),
+                Size = new Size(140, 20),
+                AutoEllipsis = true,
+                Cursor = Cursors.Hand
+            };
+
+            lblUserSubtitle = new Label()
+            {
+                Text = "⚙ Hồ sơ cá nhân",
+                ForeColor = Color.FromArgb(195, 195, 230),
+                Font = new Font("Segoe UI", 8f, FontStyle.Regular),
+                Location = new Point(54, 31),
+                Size = new Size(140, 16),
+                Cursor = Cursors.Hand
+            };
+
+            // Hover effect on User Profile Widget
+            Action<Control> attachProfileEvents = null!;
+            attachProfileEvents = (ctrl) =>
+            {
+                ctrl.MouseEnter += (s, e) => pnlUserProfile.BackColor = Color.FromArgb(70, 68, 155);
+                ctrl.MouseLeave += (s, e) => {
+                    // Check if mouse left the whole pnlUserProfile rectangle
+                    Point p = pnlUserProfile.PointToClient(Cursor.Position);
+                    if (!pnlUserProfile.ClientRectangle.Contains(p))
+                    {
+                        pnlUserProfile.BackColor = Color.FromArgb(52, 50, 118);
+                    }
+                };
+                ctrl.Click += (s, e) => OpenUserProfile();
+            };
+
+            attachProfileEvents(pnlUserProfile);
+            attachProfileEvents(pbUserAvatar);
+            attachProfileEvents(lblUserName);
+            attachProfileEvents(lblUserSubtitle);
+
+            pnlUserProfile.Controls.Add(pbUserAvatar);
+            pnlUserProfile.Controls.Add(lblUserName);
+            pnlUserProfile.Controls.Add(lblUserSubtitle);
+            pnlSidebar.Controls.Add(pnlUserProfile);
+
+            // 2. Menu Navigation Buttons
+            btnTrangChu = CreateMenuButton("TRANG CHỦ", "trangchu.png", 90);
+            btnLich = CreateMenuButton("LỊCH", "lich.png", 150);
+            btnNhapVao = CreateMenuButton("NHẬP VÀO", "nhapvao.png", 210);
+            btnThongKe = CreateMenuButton("THỐNG KÊ", "thongke.png", 270);
+            btnDanhMuc = CreateMenuButton("DANH MỤC", "danhmuc.png", 330);
             
             btnTrangChu.Click += (s, e) => { SetActiveBtn(btnTrangChu); ShowView(trangChuView); };
             btnLich.Click += (s, e) => { SetActiveBtn(btnLich); ShowView(lichView); };
@@ -81,6 +152,47 @@ namespace quanlycitieu
             pnlSidebar.Controls.Add(btnDanhMuc);
             
             this.Controls.Add(pnlSidebar);
+        }
+
+        public void LoadUserProfileHeader()
+        {
+            try
+            {
+                var userBLL = new UserBLL();
+                var user = userBLL.GetUserProfile(QuanLyChiTieu.AuthForm.CurrentUserId);
+                if (user != null && !string.IsNullOrWhiteSpace(user.FullName))
+                {
+                    lblUserName.Text = user.FullName;
+                    pbUserAvatar.Image = UserProfileForm.CreateCircularAvatar(user.FullName, 38);
+                }
+                else
+                {
+                    lblUserName.Text = "Tài khoản";
+                    pbUserAvatar.Image = UserProfileForm.CreateCircularAvatar("Tài khoản", 38);
+                }
+            }
+            catch
+            {
+                lblUserName.Text = "Tài khoản";
+                pbUserAvatar.Image = UserProfileForm.CreateCircularAvatar("Tài khoản", 38);
+            }
+        }
+
+        private void OpenUserProfile()
+        {
+            using (var profileForm = new UserProfileForm(QuanLyChiTieu.AuthForm.CurrentUserId))
+            {
+                profileForm.ShowDialog(this);
+                if (profileForm.IsLogout)
+                {
+                    this.IsLogout = true;
+                    this.Close();
+                    return;
+                }
+
+                // Cập nhật lại tên hiển thị và avatar trên header ngay lập tức nếu có thay đổi
+                LoadUserProfileHeader();
+            }
         }
 
         private void InitializeContent()
@@ -108,10 +220,11 @@ namespace quanlycitieu
             btn.ImageAlign = ContentAlignment.MiddleLeft;
             btn.Padding = new Padding(20, 0, 0, 0);
             btn.Image = GetIcon(iconName);
+            btn.Cursor = Cursors.Hand;
             return btn;
         }
 
-        private Image GetIcon(string iconName)
+        private Image? GetIcon(string iconName)
         {
             try {
                 string path = System.IO.Path.Combine(Application.StartupPath, "Resources", iconName);
