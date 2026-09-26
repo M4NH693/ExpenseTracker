@@ -73,7 +73,18 @@ namespace quanlycitieu.Views
             this.Controls.Add(lblSearch); this.Controls.Add(txtSearch);
             this.Controls.Add(lblFilter); this.Controls.Add(cbFilterLoai);
 
-            dgv = new DataGridView() { Location = new Point(420, 90), Size = new Size(530, 550), BackgroundColor = Color.White, SelectionMode = DataGridViewSelectionMode.FullRowSelect, ReadOnly = true, AllowUserToAddRows = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
+            dgv = new DataGridView()
+            {
+                Location = new Point(420, 90),
+                Size = new Size(530, 550),
+                BackgroundColor = Color.White,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                RowHeadersVisible = false,
+                RowTemplate = { Height = 34 }
+            };
             dgv.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgv.SelectionChanged += Dgv_SelectionChanged;
             this.Controls.Add(dgv);
@@ -86,12 +97,52 @@ namespace quanlycitieu.Views
                 var dt = transBLL.GetTransactionsByFilter(AuthForm.CurrentUserId, cbFilterLoai.SelectedIndex, txtSearch.Text);
                 
                 dgv.DataSource = dt;
-                dgv.Columns["GhiChu"].Visible = false;
-                dgv.Columns["SoTien"].Visible = false;
-                dgv.Columns["DanhMuc"].Visible = false;
                 if (dgv.Columns.Contains("Mã")) dgv.Columns["Mã"].Visible = false;
-                if (dgv.Columns.Contains("Thời Gian")) dgv.Columns["Thời Gian"].DefaultCellStyle.Format = "dd/MM/yyyy";
-                if (dgv.Columns.Contains("Số Tiền")) dgv.Columns["Số Tiền"].DefaultCellStyle.Format = "N0";
+                if (dgv.Columns.Contains("GhiChu")) dgv.Columns["GhiChu"].Visible = false;
+                if (dgv.Columns.Contains("SoTien")) dgv.Columns["SoTien"].Visible = false;
+
+                if (dgv.Columns.Contains("Loại"))
+                {
+                    dgv.Columns["Loại"].Visible = true;
+                    dgv.Columns["Loại"].HeaderText = "Loại";
+                    dgv.Columns["Loại"].DisplayIndex = 0;
+                    dgv.Columns["Loại"].FillWeight = 24;
+                    dgv.Columns["Loại"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+
+                if (dgv.Columns.Contains("DanhMuc"))
+                {
+                    dgv.Columns["DanhMuc"].Visible = true;
+                    dgv.Columns["DanhMuc"].HeaderText = "Danh Mục";
+                    dgv.Columns["DanhMuc"].DisplayIndex = 1;
+                    dgv.Columns["DanhMuc"].FillWeight = 40;
+                }
+
+                if (dgv.Columns.Contains("Thời Gian"))
+                {
+                    dgv.Columns["Thời Gian"].Visible = true;
+                    dgv.Columns["Thời Gian"].HeaderText = "Thời Gian";
+                    dgv.Columns["Thời Gian"].DisplayIndex = 2;
+                    dgv.Columns["Thời Gian"].FillWeight = 36;
+                    dgv.Columns["Thời Gian"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                    dgv.Columns["Thời Gian"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+
+                // Tô màu chữ theo Loại Thu Nhập / Chi Tiêu
+                foreach (DataGridViewRow row in dgv.Rows)
+                {
+                    string type = row.Cells["Loại"].Value?.ToString() ?? "";
+                    if (type == "Thu Nhập")
+                    {
+                        row.Cells["Loại"].Style.ForeColor = Color.FromArgb(46, 125, 50);
+                        row.Cells["Loại"].Style.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+                    }
+                    else
+                    {
+                        row.Cells["Loại"].Style.ForeColor = Color.FromArgb(220, 38, 38);
+                        row.Cells["Loại"].Style.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+                    }
+                }
 
                 Clear();
             } catch { }
@@ -106,7 +157,13 @@ namespace quanlycitieu.Views
                 txtLoai.Text = row.Cells["Loại"].Value?.ToString();
                 if (DateTime.TryParse(row.Cells["Thời Gian"].Value?.ToString(), out DateTime dt)) dtpThoiGian.Value = dt;
                 txtGhiChu.Text = row.Cells["GhiChu"].Value?.ToString();
-                txtSoTien.Text = row.Cells["SoTien"].Value?.ToString();
+
+                string rawAmt = row.Cells["SoTien"].Value?.ToString() ?? "0";
+                if (decimal.TryParse(rawAmt, out decimal st))
+                    txtSoTien.Text = string.Format("{0:N0}", st);
+                else
+                    txtSoTien.Text = rawAmt;
+
                 txtDanhMuc.Text = row.Cells["DanhMuc"].Value?.ToString();
                 
                 btnUpdate.Enabled = true;
@@ -125,7 +182,8 @@ namespace quanlycitieu.Views
 
         private void BtnUpdate_Click(object sender, EventArgs e)
         {
-            if (selectedId == -1 || !decimal.TryParse(txtSoTien.Text, out decimal amt)) return;
+            string cleanAmt = txtSoTien.Text.Replace(",", "");
+            if (selectedId == -1 || !decimal.TryParse(cleanAmt, out decimal amt)) return;
             try {
                 var bll = new quanlycitieu.BLL.TransactionBLL();
                 bll.UpdateTransaction(new quanlycitieu.DTO.TransactionDTO {

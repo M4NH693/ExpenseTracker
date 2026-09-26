@@ -116,11 +116,11 @@ namespace quanlycitieu.DAL
         public DataTable GetDailyTransactions(int userId)
         {
             string query = @"
-                SELECT t.Date, t.Type, ABS(SUM(t.Amount)) as Amount
+                SELECT DATE_TRUNC('day', t.Date) as Date, t.Type, ABS(SUM(t.Amount)) as Amount
                 FROM Transactions t
                 WHERE t.UserId = @uid
-                GROUP BY t.Date, t.Type
-                ORDER BY t.Date";
+                GROUP BY DATE_TRUNC('day', t.Date), t.Type
+                ORDER BY DATE_TRUNC('day', t.Date) ASC";
             NpgsqlParameter[] parameters = { new NpgsqlParameter("@uid", userId) };
             return DbConnection.ExecuteQuery(query, parameters);
         }

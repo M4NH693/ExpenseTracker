@@ -78,4 +78,42 @@ INSERT INTO Categories (Name, Type, UserId) VALUES
     ('Mua Sắm',      'Chi Tiêu', NULL),
     ('Tiền Phòng',   'Chi Tiêu', NULL),
     ('Y Tế',         'Chi Tiêu', NULL),
-    ('Giáo Dục',     'Chi Tiêu', NULL);
+    ('Giáo Dục',     'Chi Tiêu', NULL),
+    ('Thu Nợ',       'Thu Nhập', NULL),
+    ('Trả Nợ',       'Chi Tiêu', NULL);
+
+-- ============================================================
+-- 5. BẢNG BUDGETS (Hạn mức ngân sách theo tháng/năm)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS Budgets (
+    Id          SERIAL PRIMARY KEY,
+    UserId      INT          NOT NULL REFERENCES Users(Id)      ON DELETE CASCADE,
+    CategoryId  INT          NOT NULL REFERENCES Categories(Id) ON DELETE CASCADE,
+    AmountLimit DECIMAL(18,2) NOT NULL CHECK (AmountLimit > 0),
+    Month       INT          NOT NULL CHECK (Month BETWEEN 1 AND 12),
+    Year        INT          NOT NULL CHECK (Year >= 2000),
+    CreatedAt   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_budget_user_cat_month_year UNIQUE (UserId, CategoryId, Month, Year)
+);
+
+CREATE INDEX IF NOT EXISTS idx_budgets_user_period ON Budgets (UserId, Month, Year);
+
+-- ============================================================
+-- 6. BẢNG DEBTS (Sổ ghi nợ & vay)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS Debts (
+    Id            SERIAL PRIMARY KEY,
+    UserId        INT          NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
+    DebtType      INT          NOT NULL CHECK (DebtType IN (1, 2)), -- 1: Cho vay, 2: Đi vay
+    PersonName    VARCHAR(100) NOT NULL,
+    Amount        DECIMAL(18,2) NOT NULL CHECK (Amount > 0),
+    StartDate     DATE         NOT NULL DEFAULT CURRENT_DATE,
+    DueDate       DATE         NOT NULL,
+    Status        INT          NOT NULL DEFAULT 0 CHECK (Status IN (0, 1)), -- 0: Chưa trả, 1: Đã tất toán
+    Note          TEXT         DEFAULT '',
+    TransactionId INT          REFERENCES Transactions(Id) ON DELETE SET NULL,
+    CreatedAt     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_debts_user_status ON Debts (UserId, Status, DueDate);
+

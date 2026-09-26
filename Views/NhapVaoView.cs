@@ -134,6 +134,29 @@ namespace quanlycitieu.Views
             if (!decimal.TryParse(rawAmt, out decimal amt) || amt <= 0) { MessageBox.Show("Vui lòng nhập số tiền hợp lệ!"); return; }
 
             string type = rbThuNhap.Checked ? "Thu Nhập" : "Chi Tiêu";
+            int categoryId = Convert.ToInt32(cbDanhMuc.SelectedValue);
+
+            // Kiểm tra cảnh báo hạn mức ngân sách nếu là Chi Tiêu
+            if (type == "Chi Tiêu")
+            {
+                var budgetBLL = new quanlycitieu.BLL.BudgetBLL();
+                var alert = budgetBLL.CheckBudgetAlert(AuthForm.CurrentUserId, categoryId, amt, dtpThoiGian.Value);
+
+                if (alert.Level == quanlycitieu.DTO.BudgetAlertLevel.Red)
+                {
+                    // Cảnh báo ĐỎ: Vượt quá 100% hạn mức, hỏi xác nhận người dùng
+                    var confirm = MessageBox.Show(alert.Message, "Cảnh Báo Vượt Hạn Mức Ngân Sách", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (confirm == DialogResult.No)
+                    {
+                        return; // Người dùng chọn không lưu
+                    }
+                }
+                else if (alert.Level == quanlycitieu.DTO.BudgetAlertLevel.Yellow)
+                {
+                    // Cảnh báo VÀNG: Đạt hoặc vượt 80% hạn mức
+                    MessageBox.Show(alert.Message, "Cảnh Báo Hạn Mức Ngân Sách (80%)", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
 
             try
             {
@@ -141,7 +164,7 @@ namespace quanlycitieu.Views
                 bll.AddTransaction(new quanlycitieu.DTO.TransactionDTO {
                     UserId = AuthForm.CurrentUserId,
                     Type = type,
-                    CategoryId = Convert.ToInt32(cbDanhMuc.SelectedValue),
+                    CategoryId = categoryId,
                     Amount = amt,
                     Date = dtpThoiGian.Value,
                     Description = txtGhiChu.Text
