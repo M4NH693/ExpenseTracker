@@ -224,7 +224,8 @@ namespace quanlycitieu.Views
                     {
                         ChartType = SeriesChartType.Column,
                         Color = Color.FromArgb(34, 197, 94), // Xanh lá
-                        IsValueShownAsLabel = false
+                        IsValueShownAsLabel = false,
+                        IsXValueIndexed = true
                     };
                     sThu.SmartLabelStyle.Enabled = false;
 
@@ -232,7 +233,8 @@ namespace quanlycitieu.Views
                     {
                         ChartType = SeriesChartType.Column,
                         Color = Color.FromArgb(239, 68, 68), // Đỏ
-                        IsValueShownAsLabel = false
+                        IsValueShownAsLabel = false,
+                        IsXValueIndexed = true
                     };
                     sChi.SmartLabelStyle.Enabled = false;
 
@@ -257,7 +259,6 @@ namespace quanlycitieu.Views
                         {
                             sThu.Points[idxThu].IsValueShownAsLabel = false;
                             sThu.Points[idxThu].Label = "";
-                            sThu.Points[idxThu].IsEmpty = true;
                         }
 
                         int idxChi = sChi.Points.AddXY(dayLabel, (double)exp);
@@ -272,7 +273,6 @@ namespace quanlycitieu.Views
                         {
                             sChi.Points[idxChi].IsValueShownAsLabel = false;
                             sChi.Points[idxChi].Label = "";
-                            sChi.Points[idxChi].IsEmpty = true;
                         }
                     }
 
@@ -306,7 +306,8 @@ namespace quanlycitieu.Views
                     {
                         ChartType = SeriesChartType.Column,
                         Color = Color.FromArgb(34, 197, 94), // Xanh lá
-                        IsValueShownAsLabel = false
+                        IsValueShownAsLabel = false,
+                        IsXValueIndexed = true
                     };
                     sThu.SmartLabelStyle.Enabled = false;
 
@@ -314,7 +315,8 @@ namespace quanlycitieu.Views
                     {
                         ChartType = SeriesChartType.Column,
                         Color = Color.FromArgb(239, 68, 68), // Đỏ
-                        IsValueShownAsLabel = false
+                        IsValueShownAsLabel = false,
+                        IsXValueIndexed = true
                     };
                     sChi.SmartLabelStyle.Enabled = false;
 
@@ -338,7 +340,6 @@ namespace quanlycitieu.Views
                         {
                             sThu.Points[idxThu].IsValueShownAsLabel = false;
                             sThu.Points[idxThu].Label = "";
-                            sThu.Points[idxThu].IsEmpty = true;
                         }
 
                         int idxChi = sChi.Points.AddXY(mLabel, (double)exp);
@@ -353,7 +354,6 @@ namespace quanlycitieu.Views
                         {
                             sChi.Points[idxChi].IsValueShownAsLabel = false;
                             sChi.Points[idxChi].Label = "";
-                            sChi.Points[idxChi].IsEmpty = true;
                         }
                     }
 
