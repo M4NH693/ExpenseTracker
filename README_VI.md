@@ -205,16 +205,6 @@ dotnet build
 dotnet run --project quanlycitieu.csproj
 ```
 
----
-
-## Thông tin tác giả & Đề tài học phần
-
-- **Sinh viên thực hiện:** Nguyễn Văn Mạnh
-- **Mã sinh viên:** 2321050012
-- **Lớp:** DCCTCT68_05B
-- **Đơn vị đào tạo:** Trường Đại học Mỏ - Địa chất (HUMG) — Khoa Công nghệ Thông tin, Bộ môn Công nghệ Phần mềm
-- **Học phần:** Lập trình .NET 1 + BTL
-- **Giảng viên hướng dẫn:** ThS. Ngô Hùng Long
 
 ---
 
