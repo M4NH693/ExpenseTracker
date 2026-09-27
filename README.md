@@ -207,17 +207,6 @@ dotnet run --project quanlycitieu.csproj
 
 ---
 
-## Authors & Academic Details
-
-- **Student:** Nguyễn Văn Mạnh
-- **Student ID:** 2321050012
-- **Class:** DCCTCT68_05B
-- **Institution:** Hanoi University of Mining and Geology (HUMG) — Faculty of Information Technology, Department of Software Engineering
-- **Course:** Lập trình .NET 1 + BTL
-- **Instructor:** ThS. Ngô Hùng Long
-
----
-
 ## License
 
 This project is developed for educational and academic purposes under the .NET Programming curriculum at HUMG.
