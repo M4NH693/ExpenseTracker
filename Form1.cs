@@ -26,6 +26,7 @@ namespace quanlycitieu
         private Button btnDanhMuc;
         private Button btnNganSach;
         private Button btnSoNo;
+        private Button? currentActiveBtn;
 
         private TrangChuView trangChuView;
         private LichView lichView;
@@ -136,9 +137,9 @@ namespace quanlycitieu
             pnlSidebar.Controls.Add(pnlUserProfile);
 
             // 2. Menu Navigation Buttons
-            int startY = 82;
-            int btnHeight = 46;
-            int gap = 52;
+            int startY = 84;
+            int btnHeight = 50;
+            int gap = 60;
 
             btnTrangChu = CreateMenuButton("TRANG CHỦ", "trangchu.png", startY, btnHeight);
             btnLich = CreateMenuButton("LỊCH", "lich.png", startY + gap, btnHeight);
@@ -227,29 +228,56 @@ namespace quanlycitieu
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
             btn.ForeColor = Color.White;
-            btn.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+            btn.Font = new Font("Segoe UI", 10.5f, FontStyle.Bold);
             btn.TextAlign = ContentAlignment.MiddleLeft;
             btn.TextImageRelation = TextImageRelation.ImageBeforeText;
             btn.ImageAlign = ContentAlignment.MiddleLeft;
             btn.Padding = new Padding(18, 0, 0, 0);
-            btn.Image = GetIcon(iconName);
+            btn.Image = GetIcon(iconName, 28, 28);
             btn.Cursor = Cursors.Hand;
+
+            btn.MouseEnter += (s, e) => {
+                if (btn != currentActiveBtn)
+                    btn.BackColor = Color.FromArgb(55, 53, 125);
+            };
+            btn.MouseLeave += (s, e) => {
+                if (btn != currentActiveBtn)
+                    btn.BackColor = Color.Transparent;
+            };
+
             return btn;
         }
 
-        private Image? GetIcon(string iconName)
+        private Image? GetIcon(string iconName, int targetWidth = 28, int targetHeight = 28)
         {
             try {
                 string path = System.IO.Path.Combine(Application.StartupPath, "Resources", iconName);
-                if (System.IO.File.Exists(path)) return Image.FromFile(path);
-                path = System.IO.Path.Combine(Application.StartupPath, "..", "..", "..", "Resources", iconName);
-                if (System.IO.File.Exists(path)) return Image.FromFile(path);
+                if (!System.IO.File.Exists(path))
+                    path = System.IO.Path.Combine(Application.StartupPath, "..", "..", "..", "Resources", iconName);
+
+                if (System.IO.File.Exists(path))
+                {
+                    using (var rawImg = Image.FromFile(path))
+                    {
+                        var bmp = new Bitmap(targetWidth, targetHeight);
+                        using (var g = Graphics.FromImage(bmp))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                            g.DrawImage(rawImg, 0, 0, targetWidth, targetHeight);
+                        }
+                        return bmp;
+                    }
+                }
             } catch { }
             return null;
         }
 
         private void SetActiveBtn(Button activeBtn)
         {
+            currentActiveBtn = activeBtn;
             foreach (Control c in pnlSidebar.Controls)
             {
                 if (c is Button btn)
